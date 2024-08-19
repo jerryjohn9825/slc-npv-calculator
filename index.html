@@ -95,13 +95,13 @@
             const nper = parseInt(document.getElementById('nper1').value);
 
             if (rental && interest_rate && nper) {
-                let npv = rental;  // Add first month's rental directly
+                let npv = rental / (1 + interest_rate);  // Calculate the first month's NPV separately
                 let npvValues = [npv]; // Array to store NPV values over time
                 let cbrValues = [rental]; // Array to store CBR values over time
 
                 // Calculate the NPV for the remaining periods
                 for (let t = 2; t <= nper; t++) {
-                    npv += rental / Math.pow(1 + interest_rate, t - 1);
+                    npv += rental / Math.pow(1 + interest_rate, t);
                     npvValues.push(npv);
                     cbrValues.push(rental * t);
                 }
