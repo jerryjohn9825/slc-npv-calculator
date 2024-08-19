@@ -103,17 +103,17 @@
                 const nper = parseInt(document.getElementById(group.nper).value);
 
                 if (rental && interest_rate && nper) {
-                    let npv = 0; // Initialize NPV
-                    let pvTotal = 0;  // Initialize total PV
+                    let npv = rental;  // Start with the rental amount for the first month
 
-                    const pvDetails = [];  // Array to store each period's PV
+                    // Calculate the NPV for the remaining periods (using the original logic)
+                    for (let t = 2; t <= nper; t++) {
+                        npv += rental / Math.pow(1 + interest_rate, t - 1);
+                    }
 
-                    // Calculate the NPV and PV for each period
-                    for (let t = 1; t <= nper; t++) {
-                        const pv = rental / Math.pow(1 + interest_rate, t);  // Calculate PV for this period
-                        npv += pv;  // Accumulate NPV
-                        pvTotal += pv;  // Accumulate total PV
-                        pvDetails.push(`PV Period ${t}: $${pv.toFixed(2)}`);  // Store each period's PV
+                    // Calculate the total PV
+                    let pvTotal = rental;  // Add the first month's rental directly
+                    for (let t = 2; t <= nper; t++) {
+                        pvTotal += rental / Math.pow(1 + interest_rate, t - 1);
                     }
 
                     const cbr = rental * nper;  // Calculate CBR
@@ -122,14 +122,6 @@
                     resultElement.classList.add('result');
                     resultElement.innerText = `NPV ${index + 1}: $${npv.toFixed(2)}, CBR ${index + 1}: $${cbr.toFixed(2)}, Total PV ${index + 1}: $${pvTotal.toFixed(2)}`;
                     resultContainer.appendChild(resultElement);
-
-                    // Display each period's PV
-                    pvDetails.forEach(pvDetail => {
-                        const pvElement = document.createElement('div');
-                        pvElement.classList.add('result');
-                        pvElement.innerText = pvDetail;
-                        resultContainer.appendChild(pvElement);
-                    });
                 }
             });
         }
