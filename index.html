@@ -97,36 +97,31 @@
             if (rental && interest_rate && nper) {
                 let npvValues = []; // Array to store NPV values over time
                 let cbrValues = []; // Array to store CBR values over time
+                let previousNPV = 0; // Placeholder for the NPV from the previous period
                 let finalNPV = 0;
                 let finalCBR = 0;
-
-                // Placeholder for the value from the previous period
-                let previousNPV = 0;
 
                 // Calculate NPV and CBR for each period
                 for (let t = nper; t >= 1; t--) {
                     let npv = 0;
 
-                    // For the highest period (e.g., 108th), calculate NPV(+B3/12,IG3:MS3)+IF3
+                    // For the highest period (e.g., 87th month), include the current month's cash flow
                     if (t === nper) {
-                        npv = rental / (1 + interest_rate); // NPV for the first period
-                        npv += previousNPV; // Add previous NPV
-                        npv += rental; // Add the 108th month value (IF3 equivalent)
-                        finalNPV = npv; // Set this as the final NPV
+                        npv = rental / (1 + interest_rate); // Calculate NPV of the previous periods
+                        npv += rental; // Add the 87th month value directly (IF3 equivalent)
+                        finalNPV = npv; // This is the final NPV for the 87th month
                     } else {
-                        npv = rental / (1 + interest_rate); // NPV calculation for other periods
-                        npv += previousNPV; // Add previous NPV
-                        finalNPV += npv; // Accumulate NPV for other periods
+                        npv = previousNPV; // Use the previous NPV for subsequent months
                     }
 
-                    previousNPV = npv; // Update the previous NPV
-                    npvValues.push(finalNPV);
+                    previousNPV = npv; // Update the previous NPV for the next iteration
+                    npvValues.push(npv);
 
-                    const cbr = rental * (nper - t + 1);
+                    const cbr = rental * (nper - t + 1); // CBR calculation
                     cbrValues.push(cbr);
 
                     if (t === nper) {
-                        finalCBR = cbr; // Set this as the final CBR
+                        finalCBR = cbr; // Set the final CBR value for the 87th month
                     }
                 }
 
