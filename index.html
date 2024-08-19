@@ -104,21 +104,32 @@
 
                 if (rental && interest_rate && nper) {
                     let npv = 0; // Initialize NPV
-                    let pv = 0;  // Initialize PV
+                    let pvTotal = 0;  // Initialize total PV
+
+                    const pvDetails = [];  // Array to store each period's PV
 
                     // Calculate the NPV and PV for each period
                     for (let t = 1; t <= nper; t++) {
-                        const discounted_cashflow = rental / Math.pow(1 + interest_rate, t);
-                        npv += discounted_cashflow; // Accumulate NPV
-                        pv += discounted_cashflow;  // Accumulate PV
+                        const pv = rental / Math.pow(1 + interest_rate, t);  // Calculate PV for this period
+                        npv += pv;  // Accumulate NPV
+                        pvTotal += pv;  // Accumulate total PV
+                        pvDetails.push(`PV Period ${t}: $${pv.toFixed(2)}`);  // Store each period's PV
                     }
 
                     const cbr = rental * nper;  // Calculate CBR
 
                     const resultElement = document.createElement('div');
                     resultElement.classList.add('result');
-                    resultElement.innerText = `NPV ${index + 1}: $${npv.toFixed(2)}, CBR ${index + 1}: $${cbr.toFixed(2)}, PV ${index + 1}: $${pv.toFixed(2)}`;
+                    resultElement.innerText = `NPV ${index + 1}: $${npv.toFixed(2)}, CBR ${index + 1}: $${cbr.toFixed(2)}, Total PV ${index + 1}: $${pvTotal.toFixed(2)}`;
                     resultContainer.appendChild(resultElement);
+
+                    // Display each period's PV
+                    pvDetails.forEach(pvDetail => {
+                        const pvElement = document.createElement('div');
+                        pvElement.classList.add('result');
+                        pvElement.innerText = pvDetail;
+                        resultContainer.appendChild(pvElement);
+                    });
                 }
             });
         }
