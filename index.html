@@ -103,17 +103,14 @@
                 const nper = parseInt(document.getElementById(group.nper).value);
 
                 if (rental && interest_rate && nper) {
-                    let npv = rental;  // Start with the rental amount for the first month
+                    let npv = rental;  // Add first month's rental directly
+                    let pvTotal = 0;  // Initialize total PV
 
-                    // Calculate the NPV for the remaining periods (using the original logic)
-                    for (let t = 2; t <= nper; t++) {
-                        npv += rental / Math.pow(1 + interest_rate, t - 1);
-                    }
-
-                    // Calculate the total PV
-                    let pvTotal = rental;  // Add the first month's rental directly
-                    for (let t = 2; t <= nper; t++) {
-                        pvTotal += rental / Math.pow(1 + interest_rate, t - 1);
+                    // Calculate the NPV for the remaining periods and accumulate PV
+                    for (let t = 1; t <= nper; t++) {
+                        const pv = rental / Math.pow(1 + interest_rate, t - 1);
+                        npv += pv;
+                        pvTotal += pv;
                     }
 
                     const cbr = rental * nper;  // Calculate CBR
