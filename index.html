@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-NPV and CBR Calculator with Chart</title>
+    <title>Multi-NPV and CBR Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,13 +51,10 @@
             border-top: 1px solid #ddd;
             padding-top: 10px;
         }
-        .chart-container {
-            margin-top: 40px;
-        }
     </style>
 </head>
 <body>
-    <h1>Multi-NPV and CBR Calculator with Chart</h1>
+    <h1>Multi-NPV and CBR Calculator</h1>
     <form id="npv-form">
         <!-- NPV and CBR Calculator -->
         <div class="input-group">
@@ -71,89 +68,54 @@
             <input type="number" id="nper1" name="nper1" required>
         </div>
 
+        <div class="input-group">
+            <label for="rental2">Rental Amount 2 ($):</label>
+            <input type="number" id="rental2" name="rental2">
+
+            <label for="interest_rate2">Interest Rate 2 (%):</label>
+            <input type="number" id="interest_rate2" name="interest_rate2" step="0.01">
+
+            <label for="nper2">Number of Periods 2 (months):</label>
+            <input type="number" id="nper2" name="nper2">
+        </div>
+
         <!-- Calculate Button -->
         <button type="button" onclick="calculateResults()">Calculate NPVs and CBRs</button>
     </form>
 
     <div id="result-container" class="result-container"></div>
 
-    <div class="chart-container">
-        <canvas id="npvChart"></canvas>
-    </div>
-
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
-        async function calculateResults() {
-            const rental = parseFloat(document.getElementById('rental1').value);
-            const interest_rate = parseFloat(document.getElementById('interest_rate1').value);
-            const nper = parseInt(document.getElementById('nper1').value);
-
-            const response = await fetch('/calculate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ rental, interest_rate, nper })
-            });
-
-            const data = await response.json();
-
-            if (data.error) {
-                alert(`Error: ${data.error}`);
-                return;
-            }
-
+        function calculateResults() {
             const resultContainer = document.getElementById('result-container');
             resultContainer.innerHTML = ''; // Clear previous results
 
-            const npvValues = data.npv_values;
+            // Define an array of input groups for NPV and CBR
+            const inputGroups = [
+                { rental: 'rental1', rate: 'interest_rate1', nper: 'nper1' },
+                { rental: 'rental2', rate: 'interest_rate2', nper: 'nper2' }
+            ];
 
-            const resultElement = document.createElement('div');
-            resultElement.classList.add('result');
-            resultElement.innerText = `Final NPV: $${data.final_npv.toFixed(2)}, Final CBR: $${data.final_cbr.toFixed(2)}`;
-            resultContainer.appendChild(resultElement);
+            // Calculate NPVs and CBRs
+            inputGroups.forEach((group, index) => {
+                const rental = parseFloat(document.getElementById(group.rental).value);
+                const interest_rate = parseFloat(document.getElementById(group.rate).value) / 100 / 12;
+                const nper = parseInt(document.getElementById(group.nper).value);
 
-            // Generate labels for the chart
-            const labels = Array.from({ length: nper }, (_, i) => nper - i);
+                if (rental && interest_rate && nper) {
+                    let npv = rental;  // Add first month's rental directly
 
-            // Update chart
-            updateChart(labels, npvValues);
-        }
-
-        function updateChart(labels, npvValues) {
-            const ctx = document.getElementById('npvChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'NPV Balance Over Time',
-                            data: npvValues,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            fill: true,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Period'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'NPV Balance ($)'
-                            }
-                        }
+                    // Calculate the NPV for the remaining periods
+                    for (let t = 2; t <= nper; t++) {
+                        npv += rental / Math.pow(1 + interest_rate, t - 1);
                     }
+
+                    const cbr = rental * nper;  // Calculate CBR
+
+                    const resultElement = document.createElement('div');
+                    resultElement.classList.add('result');
+                    resultElement.innerText = `NPV ${index + 1}: $${npv.toFixed(2)}, CBR ${index + 1}: $${cbr.toFixed(2)}`;
+                    resultContainer.appendChild(resultElement);
                 }
             });
         }
