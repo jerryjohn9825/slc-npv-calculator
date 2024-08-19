@@ -96,13 +96,13 @@
             if (rental && interest_rate && nper) {
                 let npvValues = [];
 
-                // Calculate NPV for the final period
-                let currentNPV = rental; // NPV for the final period is the rental amount
-                npvValues.push(currentNPV); // This corresponds to period `n`
+                // Start with the final period (nth)
+                let currentNPV = rental; // NPV for the final period
+                npvValues.push(currentNPV); // This is for period `n`
 
                 // Calculate the NPV for each prior period
                 for (let t = nper - 1; t >= 1; t--) {
-                    currentNPV = (npvValues[0] + rental) / (1 + interest_rate);
+                    currentNPV = (currentNPV + rental) / (1 + interest_rate);
                     npvValues.unshift(currentNPV); // Add at the start of the array
                 }
 
