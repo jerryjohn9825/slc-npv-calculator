@@ -111,8 +111,12 @@
                 resultElement.innerText = `Final NPV: $${npv.toFixed(2)}, Final CBR: $${cbrValues[cbrValues.length - 1].toFixed(2)}`;
                 resultContainer.appendChild(resultElement);
 
-                // Create labels for the chart (1, 2, 3, ..., nper)
-                const labels = Array.from({ length: nper }, (_, i) => i + 1);
+                // Create labels for the chart (1, 2, 3, ..., nper) in reverse order
+                const labels = Array.from({ length: nper }, (_, i) => nper - i);
+
+                // Reverse the NPV and CBR values to match the reversed labels
+                npvValues.reverse();
+                cbrValues.reverse();
 
                 // Update chart
                 updateChart(labels, npvValues, cbrValues);
