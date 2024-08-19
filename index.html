@@ -85,43 +85,41 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        function calculateResults() {
+        async function calculateResults() {
+            const rental = parseFloat(document.getElementById('rental1').value);
+            const interest_rate = parseFloat(document.getElementById('interest_rate1').value);
+            const nper = parseInt(document.getElementById('nper1').value);
+
+            const response = await fetch('/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ rental, interest_rate, nper })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                alert(`Error: ${data.error}`);
+                return;
+            }
+
             const resultContainer = document.getElementById('result-container');
             resultContainer.innerHTML = ''; // Clear previous results
 
-            const rental = parseFloat(document.getElementById('rental1').value);
-            const interest_rate = parseFloat(document.getElementById('interest_rate1').value) / 100 / 12;
-            const nper = parseInt(document.getElementById('nper1').value);
+            const npvValues = data.npv_values;
 
-            if (rental && interest_rate && nper) {
-                let npvValues = [];
+            const resultElement = document.createElement('div');
+            resultElement.classList.add('result');
+            resultElement.innerText = `Final NPV: $${data.final_npv.toFixed(2)}, Final CBR: $${data.final_cbr.toFixed(2)}`;
+            resultContainer.appendChild(resultElement);
 
-                // Calculate NPV for the final period (nth)
-                let npvFinal = rental;
-                npvValues.unshift(npvFinal); // Add the last period first
+            // Generate labels for the chart
+            const labels = Array.from({ length: nper }, (_, i) => nper - i);
 
-                // Calculate NPV for each period starting from nth to 1st
-                for (let t = nper - 1; t >= 1; t--) {
-                    let npv = 0;
-                    for (let j = 1; j <= t; j++) {
-                        npv += rental / Math.pow(1 + interest_rate, j);
-                    }
-                    npvValues.unshift(npv); // Add each calculated NPV to the start of the array
-                }
-
-                const cbr = rental * nper;  // Calculate CBR
-
-                const resultElement = document.createElement('div');
-                resultElement.classList.add('result');
-                resultElement.innerText = `Final NPV: $${npvValues[0].toFixed(2)}, Final CBR: $${cbr.toFixed(2)}`;
-                resultContainer.appendChild(resultElement);
-
-                // Generate labels for the chart
-                const labels = Array.from({ length: nper }, (_, i) => nper - i);
-
-                // Update chart
-                updateChart(labels, npvValues);
-            }
+            // Update chart
+            updateChart(labels, npvValues);
         }
 
         function updateChart(labels, npvValues) {
