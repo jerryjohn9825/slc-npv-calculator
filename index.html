@@ -95,34 +95,20 @@
             const nper = parseInt(document.getElementById('nper1').value);
 
             if (rental && interest_rate && nper) {
+                let npv = 0;
                 let npvValues = []; // Array to store NPV values over time
                 let cbrValues = []; // Array to store CBR values over time
-                let cumulativeNPV = 0; // Start with 0 cumulative NPV
-                let finalNPV = 0; // Final NPV to be calculated
 
-                // Calculate NPV and CBR for each period, starting from the last month
-                for (let t = 0; t < nper; t++) {
-                    const period = nper - t;
-                    const discountedCashFlow = rental / Math.pow(1 + interest_rate, t + 1);
-                    
-                    if (t === 0) {
-                        // For the last period (e.g., 87th month), calculate NPV and set as the starting cumulative NPV
-                        cumulativeNPV = discountedCashFlow;
-                        finalNPV = cumulativeNPV; // This should match the final month NPV calculation
-                    } else {
-                        // For all other periods, add discounted cash flow to the cumulative NPV
-                        cumulativeNPV += discountedCashFlow;
-                    }
-
-                    npvValues.unshift(cumulativeNPV); // Store NPV value
-
-                    const cbr = rental * period; // CBR calculation for the period
-                    cbrValues.unshift(cbr); // Store CBR value
+                // Calculate the NPV and CBR for all periods
+                for (let t = 1; t <= nper; t++) {
+                    npv += rental / Math.pow(1 + interest_rate, t);
+                    npvValues.push(npv);
+                    cbrValues.push(rental * t);
                 }
 
                 const resultElement = document.createElement('div');
                 resultElement.classList.add('result');
-                resultElement.innerText = `Final NPV: $${finalNPV.toFixed(2)}, Final CBR: $${rental.toFixed(2)}`;
+                resultElement.innerText = `Final NPV: $${npv.toFixed(2)}, Final CBR: $${cbrValues[cbrValues.length - 1].toFixed(2)}`;
                 resultContainer.appendChild(resultElement);
 
                 // Create labels for the chart (1, 2, 3, ..., nper)
