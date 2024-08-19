@@ -95,39 +95,36 @@
 
             if (rental && interest_rate && nper) {
                 let npvValues = [];
-                let payDownValues = [];
 
-                // Calculate NPV for the final period (87th in this example)
-                let npvFinal = rental; // Start with the last rental
-                let payDownFinal = rental * nper; // Sum of all rentals
+                // Calculate NPV for the final period
+                let npvFinal = rental;
+                let cumulative_npv = 0;
 
-                // Calculate cumulative rentals for NPV calculation
-                let cumulativeRental = rental * (nper - 1);
-                let npvPrevious = cumulativeRental / (1 + interest_rate) + rental;
-                npvValues.unshift(npvPrevious); // Add for the 87th period
-
-                // Calculate NPV for the previous periods
-                for (let t = nper - 1; t >= 1; t--) {
-                    let npv = cumulativeRental / (1 + interest_rate);
-                    npvValues.unshift(npv);
-                    cumulativeRental -= rental;
-                    payDownValues.unshift(rental * t);
+                // Calculate the NPV for each prior period using cumulative discounted cash flow
+                for (let t = 1; t <= nper; t++) {
+                    cumulative_npv += rental / Math.pow(1 + interest_rate, t - 1);
+                    npvValues.unshift(cumulative_npv); // Unshift to add at the beginning of the array
                 }
+
+                const npv87th = cumulative_npv + rental;
+                npvValues.unshift(npv87th);
+
+                const cbr = rental * nper;  // Calculate CBR
 
                 const resultElement = document.createElement('div');
                 resultElement.classList.add('result');
-                resultElement.innerText = `Final NPV: $${npvValues[0].toFixed(2)}, Final Pay Down: $${payDownFinal.toFixed(2)}`;
+                resultElement.innerText = `Final NPV: $${npv87th.toFixed(2)}, Final Pay Down: $${cbr.toFixed(2)}`;
                 resultContainer.appendChild(resultElement);
 
                 // Generate labels for the chart
                 const labels = Array.from({ length: nper }, (_, i) => nper - i);
 
                 // Update chart
-                updateChart(labels, npvValues, payDownValues);
+                updateChart(labels, npvValues);
             }
         }
 
-        function updateChart(labels, npvValues, payDownValues) {
+        function updateChart(labels, npvValues) {
             const ctx = document.getElementById('npvChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
@@ -139,13 +136,6 @@
                             data: npvValues,
                             borderColor: 'rgba(75, 192, 192, 1)',
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            fill: true,
-                        },
-                        {
-                            label: 'Pay Down Over Time',
-                            data: payDownValues,
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
                             fill: true,
                         }
                     ]
@@ -162,7 +152,7 @@
                         y: {
                             title: {
                                 display: true,
-                                text: 'Value ($)'
+                                text: 'NPV Balance ($)'
                             }
                         }
                     }
