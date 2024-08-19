@@ -97,13 +97,16 @@
                 let npvValues = [];
 
                 // Calculate NPV for the final period
-                let currentNPV = rental; // NPV for the final period is just the rental
-                npvValues.unshift(currentNPV); // This corresponds to period `n`
+                let npvFinal = rental;
+                npvValues.unshift(npvFinal); // Start from the last period (nth)
 
-                // Calculate the NPV for each prior period
+                // Calculate the NPV for each prior period using cumulative discounted cash flow
                 for (let t = nper - 1; t >= 1; t--) {
-                    currentNPV = (npvValues[0] + rental) / (1 + interest_rate);
-                    npvValues.unshift(currentNPV); // Add at the start of the array
+                    let npv = 0;
+                    for (let j = 1; j <= t; j++) {
+                        npv += rental / Math.pow(1 + interest_rate, j);
+                    }
+                    npvValues.unshift(npv); // Add at the start of the array
                 }
 
                 const cbr = rental * nper;  // Calculate CBR
