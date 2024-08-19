@@ -101,9 +101,17 @@
 
                 // Start from the last period (nper) down to the first period
                 for (let t = nper; t >= 1; t--) {
-                    const discountedCashFlow = rental / Math.pow(1 + interest_rate, t);
+                    let discountedCashFlow = rental / Math.pow(1 + interest_rate, t);
+
+                    // For the first month (highest period), add an extra value to NPV calculation
+                    if (t === nper) {
+                        const additionalValue = 1000; // Example value (IF3)
+                        discountedCashFlow += additionalValue;
+                    }
+
                     accumulatedNPV += discountedCashFlow;
                     npvValues.push(accumulatedNPV);
+
                     const cbr = rental * (nper - t + 1);
                     cbrValues.push(cbr);
                 }
@@ -112,10 +120,12 @@
                 npvValues.reverse();
                 cbrValues.reverse();
 
+                // The final NPV and CBR should be the highest value
+                const finalNPV = Math.max(...npvValues);
+                const finalCBR = Math.max(...cbrValues);
+
                 const resultElement = document.createElement('div');
                 resultElement.classList.add('result');
-                const finalNPV = npvValues[npvValues.length - 1];
-                const finalCBR = cbrValues[cbrValues.length - 1];
                 resultElement.innerText = `Final NPV: $${finalNPV.toFixed(2)}, Final CBR: $${finalCBR.toFixed(2)}`;
                 resultContainer.appendChild(resultElement);
 
