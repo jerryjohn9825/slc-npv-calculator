@@ -97,32 +97,35 @@
             if (rental && interest_rate && nper) {
                 let npvValues = []; // Array to store NPV values over time
                 let cbrValues = []; // Array to store CBR values over time
-                let accumulatedNPV = 0; // Initialize accumulated NPV
+                let finalNPV = 0;
+                let finalCBR = 0;
 
-                // Start from the last period (nper) down to the first period
+                // Calculate NPV and CBR for each period
                 for (let t = nper; t >= 1; t--) {
                     let discountedCashFlow = rental / Math.pow(1 + interest_rate, t);
 
-                    // For the first month (highest period), add an extra value to NPV calculation
+                    // For the first period (highest period, 87th), add an extra value to NPV calculation
                     if (t === nper) {
-                        const additionalValue = 1000; // Example value (IF3)
+                        const additionalValue = 1000; // Example additional value (IF3)
                         discountedCashFlow += additionalValue;
+                        finalNPV = discountedCashFlow; // Set this as the final NPV
+                    } else {
+                        finalNPV += discountedCashFlow; // Continue accumulating NPV for other periods
                     }
 
-                    accumulatedNPV += discountedCashFlow;
-                    npvValues.push(accumulatedNPV);
+                    npvValues.push(finalNPV);
 
                     const cbr = rental * (nper - t + 1);
                     cbrValues.push(cbr);
+
+                    if (t === nper) {
+                        finalCBR = cbr; // Set this as the final CBR
+                    }
                 }
 
                 // Reverse the arrays so they display from the highest to lowest period
                 npvValues.reverse();
                 cbrValues.reverse();
-
-                // The final NPV and CBR should be the highest value
-                const finalNPV = Math.max(...npvValues);
-                const finalCBR = Math.max(...cbrValues);
 
                 const resultElement = document.createElement('div');
                 resultElement.classList.add('result');
