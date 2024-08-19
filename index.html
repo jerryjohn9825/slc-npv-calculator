@@ -97,12 +97,17 @@
             if (rental && interest_rate && nper) {
                 let npv = rental;  // Initialize with the first month's rental
                 let cumulativeNPV = npv; // Start with the highest month's NPV
-                let npvValues = [cumulativeNPV]; // Array to store NPV values
+                let npvValues = []; // Array to store NPV values
 
-                // Calculate the NPV for each period
-                for (let t = 2; t <= nper; t++) {
-                    npv += rental / Math.pow(1 + interest_rate, t - 1);
-                    cumulativeNPV += rental / Math.pow(1 + interest_rate, t);
+                // Calculate the NPV for each period, from 87th to 1st month
+                for (let t = 1; t <= nper; t++) {
+                    if (t === 1) {
+                        cumulativeNPV = rental;
+                    } else if (t === nper) {
+                        cumulativeNPV += rental;  // Adding current month's rental for the highest month
+                    } else {
+                        cumulativeNPV += rental / Math.pow(1 + interest_rate, t);
+                    }
                     npvValues.push(cumulativeNPV);
                 }
 
