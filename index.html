@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-NPV and Pay Down Calculator with Chart</title>
+    <title>Multi-NPV and CBR Calculator with Chart</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,9 +57,9 @@
     </style>
 </head>
 <body>
-    <h1>Multi-NPV and Pay Down Calculator with Chart</h1>
+    <h1>Multi-NPV and CBR Calculator with Chart</h1>
     <form id="npv-form">
-        <!-- NPV and Pay Down Calculator -->
+        <!-- NPV and CBR Calculator -->
         <div class="input-group">
             <label for="rental1">Rental Amount 1 ($):</label>
             <input type="number" id="rental1" name="rental1" required>
@@ -72,7 +72,7 @@
         </div>
 
         <!-- Calculate Button -->
-        <button type="button" onclick="calculateResults()">Calculate NPVs and Pay Down</button>
+        <button type="button" onclick="calculateResults()">Calculate NPVs and CBRs</button>
     </form>
 
     <div id="result-container" class="result-container"></div>
@@ -98,22 +98,24 @@
 
                 // Calculate NPV for the final period
                 let npvFinal = rental;
-                let cumulative_npv = 0;
+                let previousNPV = npvFinal;
+                npvValues.unshift(npvFinal); // Start from the last period (nth)
 
                 // Calculate the NPV for each prior period using cumulative discounted cash flow
-                for (let t = 1; t <= nper; t++) {
-                    cumulative_npv += rental / Math.pow(1 + interest_rate, t - 1);
-                    npvValues.unshift(cumulative_npv); // Unshift to add at the beginning of the array
+                for (let t = nper - 1; t >= 1; t--) {
+                    let npv = previousNPV / (1 + interest_rate);
+                    previousNPV = npv;
+                    npvValues.unshift(npv); // Add at the start of the array
                 }
 
-                const npv87th = cumulative_npv + rental;
-                npvValues.unshift(npv87th);
+                const finalNPV = previousNPV + rental; // Add the final period rental
+                npvValues[0] = finalNPV; // Update the first element
 
                 const cbr = rental * nper;  // Calculate CBR
 
                 const resultElement = document.createElement('div');
                 resultElement.classList.add('result');
-                resultElement.innerText = `Final NPV: $${npv87th.toFixed(2)}, Final Pay Down: $${cbr.toFixed(2)}`;
+                resultElement.innerText = `Final NPV: $${finalNPV.toFixed(2)}, Final CBR: $${cbr.toFixed(2)}`;
                 resultContainer.appendChild(resultElement);
 
                 // Generate labels for the chart
