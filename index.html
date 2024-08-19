@@ -103,11 +103,20 @@
                 const nper = parseInt(document.getElementById(group.nper).value);
 
                 if (rental && interest_rate && nper) {
-                    let npv = rental;  // Add first month's rental directly
+                    let npv = 0;
+                    let cumulativeNPV = 0;
 
-                    // Calculate the NPV for the remaining periods
-                    for (let t = 2; t <= nper; t++) {
-                        npv += rental / Math.pow(1 + interest_rate, t - 1);
+                    // Calculate the NPV for each period
+                    for (let t = 1; t <= nper; t++) {
+                        const periodNPV = rental / Math.pow(1 + interest_rate, t);
+                        if (t === nper) {
+                            // For the highest period, add the rental value to the NPV
+                            cumulativeNPV = periodNPV + rental;
+                        } else {
+                            // For all other periods, add just the discounted cash flow
+                            cumulativeNPV += periodNPV;
+                        }
+                        npv = cumulativeNPV;
                     }
 
                     const cbr = rental * nper;  // Calculate CBR
