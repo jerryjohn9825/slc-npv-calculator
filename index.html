@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-NPV and CBR Calculator</title>
+    <title>Multi-NPV, CBR, and PV Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,9 +54,9 @@
     </style>
 </head>
 <body>
-    <h1>Multi-NPV and CBR Calculator</h1>
+    <h1>Multi-NPV, CBR, and PV Calculator</h1>
     <form id="npv-form">
-        <!-- NPV and CBR Calculator -->
+        <!-- NPV, CBR, and PV Calculator -->
         <div class="input-group">
             <label for="rental1">Rental Amount 1 ($):</label>
             <input type="number" id="rental1" name="rental1" required>
@@ -80,7 +80,7 @@
         </div>
 
         <!-- Calculate Button -->
-        <button type="button" onclick="calculateResults()">Calculate NPVs and CBRs</button>
+        <button type="button" onclick="calculateResults()">Calculate NPVs, CBRs, and PVs</button>
     </form>
 
     <div id="result-container" class="result-container"></div>
@@ -90,31 +90,34 @@
             const resultContainer = document.getElementById('result-container');
             resultContainer.innerHTML = ''; // Clear previous results
 
-            // Define an array of input groups for NPV and CBR
+            // Define an array of input groups for NPV, CBR, and PV
             const inputGroups = [
                 { rental: 'rental1', rate: 'interest_rate1', nper: 'nper1' },
                 { rental: 'rental2', rate: 'interest_rate2', nper: 'nper2' }
             ];
 
-            // Calculate NPVs and CBRs
+            // Calculate NPVs, CBRs, and PVs
             inputGroups.forEach((group, index) => {
                 const rental = parseFloat(document.getElementById(group.rental).value);
                 const interest_rate = parseFloat(document.getElementById(group.rate).value) / 100 / 12;
                 const nper = parseInt(document.getElementById(group.nper).value);
 
                 if (rental && interest_rate && nper) {
-                    let npv = rental;  // Add first month's rental directly
+                    let npv = 0; // Initialize NPV
+                    let pv = 0;  // Initialize PV
 
-                    // Calculate the NPV for the remaining periods
-                    for (let t = 2; t <= nper; t++) {
-                        npv += rental / Math.pow(1 + interest_rate, t - 1);
+                    // Calculate the NPV and PV for each period
+                    for (let t = 1; t <= nper; t++) {
+                        const discounted_cashflow = rental / Math.pow(1 + interest_rate, t);
+                        npv += discounted_cashflow; // Accumulate NPV
+                        pv += discounted_cashflow;  // Accumulate PV
                     }
 
                     const cbr = rental * nper;  // Calculate CBR
 
                     const resultElement = document.createElement('div');
                     resultElement.classList.add('result');
-                    resultElement.innerText = `NPV ${index + 1}: $${npv.toFixed(2)}, CBR ${index + 1}: $${cbr.toFixed(2)}`;
+                    resultElement.innerText = `NPV ${index + 1}: $${npv.toFixed(2)}, CBR ${index + 1}: $${cbr.toFixed(2)}, PV ${index + 1}: $${pv.toFixed(2)}`;
                     resultContainer.appendChild(resultElement);
                 }
             });
