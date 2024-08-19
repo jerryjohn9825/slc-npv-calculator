@@ -96,16 +96,17 @@
             if (rental && interest_rate && nper) {
                 let npvValues = [];
 
-                // Calculate NPV for the final period
+                // Calculate NPV for the final period (87th period)
                 let npvFinal = rental;
-                for (let i = 1; i <= nper; i++) {
+                for (let i = 1; i <= nper - 1; i++) {
                     npvFinal += rental / Math.pow(1 + interest_rate, i);
                 }
+                npvFinal += rental;
                 npvValues.unshift(npvFinal);
 
                 let previousNPV = npvFinal;
 
-                // Calculate the NPV for each prior period using the reverse engineered logic
+                // Calculate the NPV for each prior period
                 for (let t = nper - 1; t >= 1; t--) {
                     let currentNPV = 0;
                     for (let j = 1; j <= t; j++) {
