@@ -95,28 +95,35 @@
             const nper = parseInt(document.getElementById('nper1').value);
 
             if (rental && interest_rate && nper) {
-                let npv = rental / (1 + interest_rate);  // Calculate the first month's NPV separately
-                let npvValues = [npv]; // Array to store NPV values over time
-                let cbrValues = [rental]; // Array to store CBR values over time
+                let npvValues = []; // Array to store NPV values over time
+                let cbrValues = []; // Array to store CBR values over time
 
-                // Calculate the NPV for the remaining periods
-                for (let t = 2; t <= nper; t++) {
-                    npv += rental / Math.pow(1 + interest_rate, t);
+                // Start from the last period (nper) down to the first period
+                for (let t = nper; t >= 1; t--) {
+                    const npv = rental / Math.pow(1 + interest_rate, t);
                     npvValues.push(npv);
-                    cbrValues.push(rental * t);
+                    const cbr = rental * (nper - t + 1);
+                    cbrValues.push(cbr);
                 }
+
+                // Accumulate NPV values to show the total balance over time
+                for (let i = 1; i < npvValues.length; i++) {
+                    npvValues[i] += npvValues[i - 1];
+                }
+
+                // Reverse the arrays so they display from the highest to lowest period
+                npvValues.reverse();
+                cbrValues.reverse();
 
                 const resultElement = document.createElement('div');
                 resultElement.classList.add('result');
-                resultElement.innerText = `Final NPV: $${npv.toFixed(2)}, Final CBR: $${cbrValues[cbrValues.length - 1].toFixed(2)}`;
+                const finalNPV = npvValues[npvValues.length - 1];
+                const finalCBR = cbrValues[cbrValues.length - 1];
+                resultElement.innerText = `Final NPV: $${finalNPV.toFixed(2)}, Final CBR: $${finalCBR.toFixed(2)}`;
                 resultContainer.appendChild(resultElement);
 
-                // Create labels for the chart (1, 2, 3, ..., nper) in reverse order
+                // Create labels for the chart (1, 2, 3, ..., nper)
                 const labels = Array.from({ length: nper }, (_, i) => nper - i);
-
-                // Reverse the NPV and CBR values to match the reversed labels
-                npvValues.reverse();
-                cbrValues.reverse();
 
                 // Update chart
                 updateChart(labels, npvValues, cbrValues);
