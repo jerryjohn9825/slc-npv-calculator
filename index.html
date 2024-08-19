@@ -95,30 +95,25 @@
 
             if (rental && interest_rate && nper) {
                 let npvValues = [];
-                
-                // Calculate the cumulative NPV for each period
-                let npvFinal = 0;
 
-                for (let t = nper; t >= 1; t--) {
+                // Calculate NPV for the final period (nth)
+                let npvFinal = rental;
+                npvValues.unshift(npvFinal); // Add the last period first
+
+                // Calculate NPV for each period starting from nth to 1st
+                for (let t = nper - 1; t >= 1; t--) {
                     let npv = 0;
                     for (let j = 1; j <= t; j++) {
                         npv += rental / Math.pow(1 + interest_rate, j);
                     }
-
-                    // If it's the final period, add the final rental value
-                    if (t === nper) {
-                        npv += rental;
-                    }
-
-                    npvValues.unshift(npv);
-                    npvFinal = npv; // store the last calculated NPV
+                    npvValues.unshift(npv); // Add each calculated NPV to the start of the array
                 }
 
                 const cbr = rental * nper;  // Calculate CBR
 
                 const resultElement = document.createElement('div');
                 resultElement.classList.add('result');
-                resultElement.innerText = `Final NPV: $${npvFinal.toFixed(2)}, Final CBR: $${cbr.toFixed(2)}`;
+                resultElement.innerText = `Final NPV: $${npvValues[0].toFixed(2)}, Final CBR: $${cbr.toFixed(2)}`;
                 resultContainer.appendChild(resultElement);
 
                 // Generate labels for the chart
