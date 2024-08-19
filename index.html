@@ -56,7 +56,6 @@
 <body>
     <h1>Multi-NPV and CBR Calculator</h1>
     <form id="npv-form">
-        <!-- NPV and CBR Calculator -->
         <div class="input-group">
             <label for="rental1">Rental Amount 1 ($):</label>
             <input type="number" id="rental1" name="rental1" required>
@@ -68,56 +67,34 @@
             <input type="number" id="nper1" name="nper1" required>
         </div>
 
-        <div class="input-group">
-            <label for="rental2">Rental Amount 2 ($):</label>
-            <input type="number" id="rental2" name="rental2">
-
-            <label for="interest_rate2">Interest Rate 2 (%):</label>
-            <input type="number" id="interest_rate2" name="interest_rate2" step="0.01">
-
-            <label for="nper2">Number of Periods 2 (months):</label>
-            <input type="number" id="nper2" name="nper2">
-        </div>
-
-        <!-- Calculate Button -->
-        <button type="button" onclick="calculateResults()">Calculate NPVs and CBRs</button>
+        <button type="button" onclick="calculateResults()">Calculate NPVs and PVs</button>
     </form>
 
     <div id="result-container" class="result-container"></div>
 
     <script>
-        function calculateResults() {
+        async function calculateResults() {
             const resultContainer = document.getElementById('result-container');
             resultContainer.innerHTML = ''; // Clear previous results
 
-            // Define an array of input groups for NPV and CBR
-            const inputGroups = [
-                { rental: 'rental1', rate: 'interest_rate1', nper: 'nper1' },
-                { rental: 'rental2', rate: 'interest_rate2', nper: 'nper2' }
-            ];
+            const rental = parseFloat(document.getElementById('rental1').value);
+            const rate = parseFloat(document.getElementById('interest_rate1').value);
+            const nper = parseInt(document.getElementById('nper1').value);
 
-            // Calculate NPVs and CBRs
-            inputGroups.forEach((group, index) => {
-                const rental = parseFloat(document.getElementById(group.rental).value);
-                const interest_rate = parseFloat(document.getElementById(group.rate).value) / 100 / 12;
-                const nper = parseInt(document.getElementById(group.nper).value);
-
-                if (rental && interest_rate && nper) {
-                    let npv = rental;  // Add first month's rental directly
-
-                    // Calculate the NPV for the remaining periods
-                    for (let t = 2; t <= nper; t++) {
-                        npv += rental / Math.pow(1 + interest_rate, t - 1);
-                    }
-
-                    const cbr = rental * nper;  // Calculate CBR
-
-                    const resultElement = document.createElement('div');
-                    resultElement.classList.add('result');
-                    resultElement.innerText = NPV ${index + 1}: $${npv.toFixed(2)}, CBR ${index + 1}: $${cbr.toFixed(2)};
-                    resultContainer.appendChild(resultElement);
-                }
+            const response = await fetch('/calculate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rental, rate, nper })
             });
+
+            const data = await response.json();
+            const npv = data.npv;
+            const pv = data.pv;
+
+            const resultElement = document.createElement('div');
+            resultElement.classList.add('result');
+            resultElement.innerText = `NPV: $${npv}, PV: $${pv}`;
+            resultContainer.appendChild(resultElement);
         }
     </script>
 </body>
