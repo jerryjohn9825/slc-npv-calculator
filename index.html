@@ -97,31 +97,28 @@
             if (rental && interest_rate && nper) {
                 let npvValues = []; // Array to store NPV values over time
                 let cbrValues = []; // Array to store CBR values over time
-                let previousNPV = 0; // Placeholder for the NPV from the previous period
+                let cumulativeNPV = 0; // Placeholder for accumulating the NPV
                 let finalNPV = 0;
                 let finalCBR = 0;
 
                 // Calculate NPV and CBR for each period
                 for (let t = nper; t >= 1; t--) {
-                    let npv = 0;
+                    let npv = rental / Math.pow(1 + interest_rate, nper - t + 1); // Calculate discounted cash flow
 
-                    // For the highest period (e.g., 87th month), include the current month's cash flow
                     if (t === nper) {
-                        npv = rental / (1 + interest_rate); // Calculate NPV of the previous periods
-                        npv += rental; // Add the 87th month value directly (IF3 equivalent)
-                        finalNPV = npv; // This is the final NPV for the 87th month
+                        cumulativeNPV = npv; // For the last month, this is the starting NPV
+                        finalNPV = cumulativeNPV; // Final NPV is the starting NPV
                     } else {
-                        npv = previousNPV; // Use the previous NPV for subsequent months
+                        cumulativeNPV += npv; // Add discounted cash flow to the cumulative NPV
                     }
 
-                    previousNPV = npv; // Update the previous NPV for the next iteration
-                    npvValues.push(npv);
+                    npvValues.push(cumulativeNPV);
 
                     const cbr = rental * (nper - t + 1); // CBR calculation
                     cbrValues.push(cbr);
 
                     if (t === nper) {
-                        finalCBR = cbr; // Set the final CBR value for the 87th month
+                        finalCBR = cbr; // Set the final CBR value for the last month
                     }
                 }
 
