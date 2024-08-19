@@ -100,19 +100,26 @@
                 let finalNPV = 0;
                 let finalCBR = 0;
 
+                // Placeholder for the value from the previous period
+                let previousNPV = 0;
+
                 // Calculate NPV and CBR for each period
                 for (let t = nper; t >= 1; t--) {
-                    let discountedCashFlow = rental / Math.pow(1 + interest_rate, t);
+                    let npv = 0;
 
-                    // For the first period (highest period, 87th), add an extra value to NPV calculation
+                    // For the highest period (e.g., 108th), calculate NPV(+B3/12,IG3:MS3)+IF3
                     if (t === nper) {
-                        const additionalValue = 1000; // Example additional value (IF3)
-                        discountedCashFlow += additionalValue;
-                        finalNPV = discountedCashFlow; // Set this as the final NPV
+                        npv = rental / (1 + interest_rate); // NPV for the first period
+                        npv += previousNPV; // Add previous NPV
+                        npv += rental; // Add the 108th month value (IF3 equivalent)
+                        finalNPV = npv; // Set this as the final NPV
                     } else {
-                        finalNPV += discountedCashFlow; // Continue accumulating NPV for other periods
+                        npv = rental / (1 + interest_rate); // NPV calculation for other periods
+                        npv += previousNPV; // Add previous NPV
+                        finalNPV += npv; // Accumulate NPV for other periods
                     }
 
+                    previousNPV = npv; // Update the previous NPV
                     npvValues.push(finalNPV);
 
                     const cbr = rental * (nper - t + 1);
