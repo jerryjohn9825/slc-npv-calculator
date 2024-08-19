@@ -103,7 +103,7 @@
 
                 // Calculate the NPV for each period from 86th month to the 1st month
                 for (let t = nper - 1; t >= 1; t--) {
-                    cumulativeNPV = (cumulativeNPV + rental) / (1 + interest_rate);
+                    cumulativeNPV = (npvValues[npvValues.length - 1] - rental) / (1 + interest_rate);
                     npvValues.push(cumulativeNPV);
                 }
 
