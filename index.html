@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-NPV and CBR Calculator</title>
+    <title>Multi-NPV and CBR Calculator with Chart</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,10 +51,13 @@
             border-top: 1px solid #ddd;
             padding-top: 10px;
         }
+        .chart-container {
+            margin-top: 40px;
+        }
     </style>
 </head>
 <body>
-    <h1>Multi-NPV and CBR Calculator</h1>
+    <h1>Multi-NPV and CBR Calculator with Chart</h1>
     <form id="npv-form">
         <!-- NPV and CBR Calculator -->
         <div class="input-group">
@@ -74,6 +77,13 @@
 
     <div id="result-container" class="result-container"></div>
 
+    <div class="chart-container">
+        <canvas id="npvChart"></canvas>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         function calculateResults() {
             const resultContainer = document.getElementById('result-container');
@@ -87,13 +97,14 @@
             if (rental && interest_rate && nper) {
                 let npv = rental;  // Initialize with the first month's rental
                 let cumulativeNPV = npv; // Start with the highest month's NPV
+                let npvValues = [cumulativeNPV]; // Array to store NPV values
 
-                // Calculate the NPV for the remaining periods
+                // Calculate the NPV for each period
                 for (let t = 2; t <= nper; t++) {
                     npv += rental / Math.pow(1 + interest_rate, t - 1);
+                    cumulativeNPV += rental / Math.pow(1 + interest_rate, t);
+                    npvValues.push(cumulativeNPV);
                 }
-
-                cumulativeNPV += npv; // Accumulate the NPV for all periods
 
                 const cbr = rental * nper;  // Calculate CBR
 
@@ -101,7 +112,52 @@
                 resultElement.classList.add('result');
                 resultElement.innerText = `NPV 1: $${cumulativeNPV.toFixed(2)}, CBR 1: $${cbr.toFixed(2)}`;
                 resultContainer.appendChild(resultElement);
+
+                // Reverse the NPV values to display from 87 to 1
+                npvValues.reverse();
+
+                // Create labels for the chart
+                const labels = Array.from({ length: nper }, (_, i) => nper - i);
+
+                // Update chart
+                updateChart(labels, npvValues);
             }
+        }
+
+        function updateChart(labels, npvValues) {
+            const ctx = document.getElementById('npvChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'NPV Balance Over Time',
+                            data: npvValues,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Period'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'NPV Balance ($)'
+                            }
+                        }
+                    }
+                }
+            });
         }
     </script>
 </body>
