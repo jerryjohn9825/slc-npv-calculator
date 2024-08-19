@@ -97,34 +97,29 @@
             if (rental && interest_rate && nper) {
                 let npvValues = []; // Array to store NPV values over time
                 let cbrValues = []; // Array to store CBR values over time
-                let cumulativeNPV = 0; // Placeholder for accumulating the NPV
-                let finalNPV = 0;
-                let finalCBR = 0;
+                let cumulativeNPV = 0; // Start with 0 cumulative NPV
 
-                // Calculate NPV and CBR for each period
-                for (let t = nper; t >= 1; t--) {
-                    let npv = rental / Math.pow(1 + interest_rate, nper - t + 1); // Calculate discounted cash flow
-
-                    if (t === nper) {
-                        cumulativeNPV = npv; // For the last month, this is the starting NPV
-                        finalNPV = cumulativeNPV; // Final NPV is the starting NPV
+                // Calculate NPV and CBR for each period, starting from the last month
+                for (let t = 0; t < nper; t++) {
+                    const period = nper - t;
+                    const discountedCashFlow = rental / Math.pow(1 + interest_rate, t + 1);
+                    
+                    if (t === 0) {
+                        // For the last period (e.g., 87th month), start with the rental value as NPV
+                        cumulativeNPV = discountedCashFlow;
                     } else {
-                        cumulativeNPV += npv; // Add discounted cash flow to the cumulative NPV
+                        // For all other periods, add discounted cash flow to the cumulative NPV
+                        cumulativeNPV += discountedCashFlow;
                     }
 
-                    npvValues.push(cumulativeNPV);
+                    npvValues.unshift(cumulativeNPV);
 
-                    const cbr = rental * (nper - t + 1); // CBR calculation
-                    cbrValues.push(cbr);
-
-                    if (t === nper) {
-                        finalCBR = cbr; // Set the final CBR value for the last month
-                    }
+                    const cbr = rental * period; // CBR calculation for the period
+                    cbrValues.unshift(cbr);
                 }
 
-                // Reverse the arrays so they display from the highest to lowest period
-                npvValues.reverse();
-                cbrValues.reverse();
+                const finalNPV = cumulativeNPV;
+                const finalCBR = rental;
 
                 const resultElement = document.createElement('div');
                 resultElement.classList.add('result');
@@ -132,7 +127,7 @@
                 resultContainer.appendChild(resultElement);
 
                 // Create labels for the chart (1, 2, 3, ..., nper)
-                const labels = Array.from({ length: nper }, (_, i) => nper - i);
+                const labels = Array.from({ length: nper }, (_, i) => i + 1);
 
                 // Update chart
                 updateChart(labels, npvValues, cbrValues);
