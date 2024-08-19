@@ -97,24 +97,26 @@
             if (rental && interest_rate && nper) {
                 let npvValues = []; // Array to store NPV values
 
-                // Calculate the NPV for the 87th month
-                let cumulativeNPV = rental; // Start with the highest month's rental
-                npvValues.push(cumulativeNPV);
+                // Calculate the NPV for the final month (nth period)
+                let npvFinal = rental; // Start with the final month's rental
+                npvValues.push(npvFinal); // Add the final month's NPV
 
-                // Calculate the NPV for each period from 86th month to the 1st month
+                // Calculate the NPV for each previous period from n-1 to 1
+                let previousNPV = npvFinal;
                 for (let t = nper - 1; t >= 1; t--) {
-                    cumulativeNPV = (npvValues[npvValues.length - 1] - rental) / (1 + interest_rate);
-                    npvValues.push(cumulativeNPV);
+                    let currentNPV = (previousNPV - rental) / (1 + interest_rate);
+                    npvValues.push(currentNPV);
+                    previousNPV = currentNPV;
                 }
 
                 const cbr = rental * nper;  // Calculate CBR
 
                 const resultElement = document.createElement('div');
                 resultElement.classList.add('result');
-                resultElement.innerText = `NPV 1: $${npvValues[0].toFixed(2)}, CBR 1: $${cbr.toFixed(2)}`;
+                resultElement.innerText = `Final NPV: $${npvFinal.toFixed(2)}, CBR: $${cbr.toFixed(2)}`;
                 resultContainer.appendChild(resultElement);
 
-                // Reverse the NPV values to display from 87 to 1
+                // Reverse the NPV values to display from the final period down to 1
                 npvValues.reverse();
 
                 // Create labels for the chart
