@@ -97,18 +97,15 @@
             if (rental && interest_rate && nper) {
                 let npvValues = []; // Array to store NPV values over time
                 let cbrValues = []; // Array to store CBR values over time
+                let accumulatedNPV = 0; // Initialize accumulated NPV
 
                 // Start from the last period (nper) down to the first period
                 for (let t = nper; t >= 1; t--) {
-                    const npv = rental / Math.pow(1 + interest_rate, t);
-                    npvValues.push(npv);
+                    const discountedCashFlow = rental / Math.pow(1 + interest_rate, t);
+                    accumulatedNPV += discountedCashFlow;
+                    npvValues.push(accumulatedNPV);
                     const cbr = rental * (nper - t + 1);
                     cbrValues.push(cbr);
-                }
-
-                // Accumulate NPV values to show the total balance over time
-                for (let i = 1; i < npvValues.length; i++) {
-                    npvValues[i] += npvValues[i - 1];
                 }
 
                 // Reverse the arrays so they display from the highest to lowest period
