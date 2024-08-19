@@ -97,9 +97,9 @@
             if (rental && interest_rate && nper) {
                 let npvValues = []; // Array to store NPV values
 
-                // Calculate the NPV for the final month (nth period)
+                // Calculate the NPV for the nth month (final month)
                 let npvFinal = rental; // Start with the final month's rental
-                npvValues.push(npvFinal); // Add the final month's NPV
+                npvValues.push(npvFinal);
 
                 // Calculate the NPV for each previous period from n-1 to 1
                 let previousNPV = npvFinal;
