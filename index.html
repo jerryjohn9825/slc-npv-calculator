@@ -71,6 +71,17 @@
             <input type="number" id="nper1" name="nper1" required>
         </div>
 
+        <div class="input-group">
+            <label for="rental2">Rental Amount 2 ($):</label>
+            <input type="number" id="rental2" name="rental2">
+
+            <label for="interest_rate2">Interest Rate 2 (%):</label>
+            <input type="number" id="interest_rate2" name="interest_rate2" step="0.01">
+
+            <label for="nper2">Number of Periods 2 (months):</label>
+            <input type="number" id="nper2" name="nper2">
+        </div>
+
         <!-- Calculate Button -->
         <button type="button" onclick="calculateResults()">Calculate NPVs and CBRs</button>
     </form>
@@ -89,42 +100,48 @@
             const resultContainer = document.getElementById('result-container');
             resultContainer.innerHTML = ''; // Clear previous results
 
-            // Define the input group for NPV and CBR
-            const rental = parseFloat(document.getElementById('rental1').value);
-            const interest_rate = parseFloat(document.getElementById('interest_rate1').value) / 100 / 12;
-            const nper = parseInt(document.getElementById('nper1').value);
+            // Define an array of input groups for NPV and CBR
+            const inputGroups = [
+                { rental: 'rental1', rate: 'interest_rate1', nper: 'nper1' },
+                { rental: 'rental2', rate: 'interest_rate2', nper: 'nper2' }
+            ];
 
-            if (rental && interest_rate && nper) {
-                let npvValues = []; // Array to store NPV values
+            // Loop through each input group
+            inputGroups.forEach((group, index) => {
+                const rental = parseFloat(document.getElementById(group.rental).value);
+                const interest_rate = parseFloat(document.getElementById(group.rate).value) / 100 / 12;
+                const nper = parseInt(document.getElementById(group.nper).value);
 
-                // Calculate the NPV for the nth month (final month)
-                let npvFinal = rental; // Start with the final month's rental
-                npvValues.push(npvFinal);
+                if (rental && interest_rate && nper) {
+                    let npvValues = [];
+                    let npv = rental;  // Add first month's rental directly
+                    let cumulative_npv = npv;
 
-                // Calculate the NPV for each previous period from n-1 to 1
-                let previousNPV = npvFinal;
-                for (let t = nper - 1; t >= 1; t--) {
-                    let currentNPV = (previousNPV - rental) / (1 + interest_rate);
-                    npvValues.push(currentNPV);
-                    previousNPV = currentNPV;
+                    // Calculate the NPV for the remaining periods
+                    for (let t = 2; t <= nper; t++) {
+                        npv += rental / Math.pow(1 + interest_rate, t - 1);
+                        npvValues.push(npv);
+                    }
+
+                    cumulative_npv += npv;
+
+                    const cbr = rental * nper;  // Calculate CBR
+
+                    const resultElement = document.createElement('div');
+                    resultElement.classList.add('result');
+                    resultElement.innerText = `NPV ${index + 1}: $${cumulative_npv.toFixed(2)}, CBR ${index + 1}: $${cbr.toFixed(2)}`;
+                    resultContainer.appendChild(resultElement);
+
+                    // Reverse the NPV values so the chart goes from the highest period to the lowest
+                    npvValues.reverse();
+
+                    // Generate labels for the chart
+                    const labels = Array.from({ length: nper }, (_, i) => nper - i);
+
+                    // Update chart
+                    updateChart(labels, npvValues);
                 }
-
-                const cbr = rental * nper;  // Calculate CBR
-
-                const resultElement = document.createElement('div');
-                resultElement.classList.add('result');
-                resultElement.innerText = `Final NPV: $${npvFinal.toFixed(2)}, CBR: $${cbr.toFixed(2)}`;
-                resultContainer.appendChild(resultElement);
-
-                // Reverse the NPV values to display from the final period down to 1
-                npvValues.reverse();
-
-                // Create labels for the chart
-                const labels = Array.from({ length: nper }, (_, i) => nper - i);
-
-                // Update chart
-                updateChart(labels, npvValues);
-            }
+            });
         }
 
         function updateChart(labels, npvValues) {
